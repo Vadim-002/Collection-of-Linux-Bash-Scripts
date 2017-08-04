@@ -32,16 +32,16 @@ fi
 
 #添加默认用户
 
-id quliang &>/dev/null
+id mage &>/dev/null
 
 if [ $?  -eq 0  ]; then
-	echo "the uesr quliang has already exits "
+	echo "the uesr mage has already exits "
 else
-	useradd quliang
+	useradd mage
 	if [ $?  -eq 0 ]; then
-		echo 123456|passwd --stdin quliang &> /dev/null
+		echo 123456|passwd --stdin mage &> /dev/null
 	else 
-		echo " add user quliang error  "
+		echo " add user mage error  "
 	fi
 fi
 
@@ -49,7 +49,7 @@ fi
 #配置vim的一些默认属性
 
 cat >> /etc/vimrc <<EOF
-"quliang setting "
+"mage setting "
 set nu
 set sm
 set ai
@@ -85,7 +85,7 @@ EOF
 #	#Filename: $filename
 #	#Version: 1.0
 #	#Date: `date"+%F %T"`
-#	#Author: quliang
+#	#Author: mage
 #	#Website:www.pojun.tech
 #	#Description: This is a bash script
 #	#-----------------------------
