@@ -60,19 +60,33 @@ else
 fi
 
 #提示系统即将被初始化
-[ $VERBOSE -eq 1 ] && echo "The system is going to be initialized"
+[ $VERBOSE -eq 1 ] && echo  -e "\033[32m The system is going to be initialized \033[0m" 
+
+#设置提示符的颜色
+export PS1="\[\e[34m\][\u@\h \W]\$\[\e[0m\]"
+[ $VERBOSE -eq 1 ] && echo  -e  "\033[32m PS1 has been modified \033[0m"
+
+#设置全局的别名
+echo "#personal setting" >> /etc/bashrc
+#跳转到网络目录
+echo "alias cdnet='cd /etc/sysconfig/network-scripts/'" >> /etc/bashrc
+
+#设置登陆成功的欢迎语句
+echo "Hello World Linux!!" &> /etc/motd
+
+[ $VERBOSE -eq 1 ] && echo  -e  "\033[32m alias has been modified \033[0m"
 
 #CentOS 7 中的特殊操作
 centos7init(){
     #关闭防火墙
     systemctl disable firewalld.service
     systemctl stop firewalld.service
-    [ $VERBOSE -eq 1 ] && echo "firewalld is closed"
+    [ $VERBOSE -eq 1 ] && echo  -e "\033[32m firewalld is closed \033[0m"
 	
 	
 	#初始化网络环境
-	[ $VERBOSE -eq 1 ] && echo "restart network"
-	sed -i 's/ONBOOT-NO/ONBOOT=yes/' ifcfg-enss33
+	[ $VERBOSE -eq 1 ] && echo -e  "\033[32m restart network \033[0m"
+	sed -i 's/ONBOOT=no/ONBOOT=yes/' /etc/sysconfig/network-scripts/ifcfg-ens33
 	service network restart
 }
 #CentOS 6中的特殊操作
@@ -80,13 +94,18 @@ centos6init(){
     #关闭防火墙
     chkconfig iptables off
     service iptables stop
-    [ $VERBOSE -eq 1] && echo "iptables is closed"
+    [ $VERBOSE -eq 1 ] && echo  -e "\033[32m iptables is closed \033[0m"
+	
+	#初始化网络环境
+	[ $VERBOSE -eq 1 ] && echo  -e "\033[32m restart network \033[0m"
+	sed -i 's/ONBOOT=no/ONBOOT=yes/' /etc/sysconfig/network-scripts/ifcfg-eth0
+	service network restart
 }
 
 #关闭SELinux
 closeSELinux(){
     sed -n 's/^SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config
-    [ $VERBOSE -eq 1 ] && echo "SELinux is closed"
+    [ $VERBOSE -eq 1 ] && echo  -e "\033[32m SELinux is closed \033[0m"
 }
 
 #判断系统版本
@@ -105,14 +124,14 @@ closeSELinux
 id mage &> /dev/null
 
 if [ $?  -eq 0  ]; then
-    [ $VERBOSE -eq 1 ] && echo "the uesr mage has already exits"
+    [ $VERBOSE -eq 1 ] && echo  -e "\033[32m the uesr mage has already exits \033[0m"
 else
     useradd mage
     if [ $?  -eq 0 ]; then
         echo 123456|passwd --stdin mage &> /dev/null
-        [ $VERBOSE -eq 1 ] && echo "add user mage succeed"
+        [ $VERBOSE -eq 1 ] && echo  -e "\033[32m add user mage succeed \033[0m"
     else
-        [ $VERBOSE -eq 1 ] && echo "add user mage error"
+        [ $VERBOSE -eq 1 ] && echo  -e "\033[32m add user mage error \033[0m"
     fi
 fi
 
@@ -125,7 +144,7 @@ if [ ! -f  "$YUM_REPO" ]; then
     #文件不存在
     YUM_REPO_EXITS=0
     touch "$YUM_REPO"
-    [  $? -eq 0  ] && [ $VERBOSE -eq 1 ] && echo "touch file $YUM_REPO SUCCESS"
+    [  $? -eq 0  ] && [ $VERBOSE -eq 1 ] && echo -e  "\033[32m touch file $YUM_REPO SUCCESS \033[0m"
 fi
 
 # 向文件中追加yum源的配置内容
@@ -162,7 +181,7 @@ EOF
 	fi
     
 
-[ $VERBOSE -eq 1 ] && echo "yum repository has been established"
+[ $VERBOSE -eq 1 ] && echo  -e "\033[32m yum repository has been established \033[0m"
 
 fi
 
@@ -173,22 +192,22 @@ rpm -q vim
 
 if [  $? -ne 0  ]; then 
 	# 安装 vim 包
-	yum install vim 
+	yum install vim  -y
 	
-	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ] && echo "vim has installed"
+	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ] && echo  -e "\033[32m vim has installed \033[0m"
 	
 #配置vim的一些默认属性
 #静默模式判断该配置文件中是否已经定义过相关的属性，如果是，则不添加配置
 #如果没有添加过，则进行添加
 grep -q "\<mage setting\>" /etc/vimrc ||{
 	cat >> /etc/vimrc <<EOF
-	"mage setting"
-	set nu  #
-	set sm
-	set ai
-	set hlsearch
-	set ts=4
-	syntax on
+"mage setting"
+set nu  
+set sm
+set ai
+set hlsearch
+set ts=4
+syntax on
 EOF
 }
 fi
@@ -197,13 +216,13 @@ fi
 
 # 判断是否安装了ssh
 installSSH(){
-rpm -q ssh
+rpm -q openssh
 
 if [ ! $? -eq 0  ]; then 
 	# 安装 ssh 包
-	yum install ssh 
+	yum install openssh  -y
 	
-	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ] && echo "ssh has installed"
+	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ] && echo  -e "\033[32m openssh has installed \033[0m"
 fi
 }
 
@@ -215,9 +234,9 @@ rpm -q tree
 
 if [  $? -ne 0  ]; then 
 	# 安装 tree 包
-	yum install tree 
+	yum install tree  -y
 	
-	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ]  && echo "tree has installed"
+	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ]  && echo  -e "\033[32m tree has installed \033[0m"
 fi
 }
 # 安装ftp 包
@@ -226,8 +245,8 @@ rpm -q vsftpd
 
 if [ $? -ne 0  ]; then 
 	# 安装 ftp
-	yum install vsftpd 
-	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ]  && echo "vsftpd has installed"
+	yum install vsftpd  -y
+	[  $? -eq 0  ] &&  [ $VERBOSE -eq 1 ]  && echo  -e "\033[32m vsftpd has installed \033[0m"
 	#启动ftp服务
 	systemctl start vsftpd 
 	#设为开机自动启动ftp服务
@@ -242,8 +261,8 @@ rpm -q telnet
 
 if [ $? -ne 0  ]; then 
 	# 安装 telnet
-	yum install telnet
-	[  $? -eq 0  ]  &&  [ $VERBOSE -eq 1 ] && echo "telnet has installed"
+	yum install telnet -y
+	[  $? -eq 0  ]  &&  [ $VERBOSE -eq 1 ] && echo  -e  "\033[32m telnet has installed \033[0m"
 fi
 }
 
@@ -254,8 +273,8 @@ rpm -q lftp
 
 if [ $? -ne 0  ]; then 
 	# 安装 lftp
-	yum install lftp
-	[  $? -eq 0  ]  &&  [ $VERBOSE -eq 1 ] && echo "lftp has installed"
+	yum install lftp -y
+	[  $? -eq 0  ]  &&  [ $VERBOSE -eq 1 ] && echo -e  "\033[32m lftp has installed \033[0m"
 fi
 }
 # 安装autofs
@@ -264,8 +283,8 @@ rpm -q autofs
 
 if [  $? -ne 0  ]; then 
 	# 安装 autofs
-	yum install autofs
-	[  $? -eq 0  ]  &&  [ $VERBOSE -eq 1 ] && echo "autofs has installed"
+	yum install autofs -y 
+	[  $? -eq 0  ]  &&  [ $VERBOSE -eq 1 ] && echo -e  "\033[32m autofs has installed \033[0m"
 fi
 }
 
@@ -276,12 +295,15 @@ installFtp
 installTelnet
 installLftp
 
-
+# -------------------下面的内容还有待于完善----------------------
+# 安装开发包组
 installDevelopmentTools(){
 
 	yum  groupinstall Development tools
 
 }
+
+# 安装增强的tab键补全
 
 
 exit $SUCCESS
